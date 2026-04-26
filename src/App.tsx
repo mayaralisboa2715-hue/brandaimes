@@ -63,7 +63,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col md:flex-row">
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-[#141414] border-r border-gray-800 p-6 sticky top-0 h-screen">
+      <aside className="hidden md:flex flex-col w-64 bg-[#141414] border-r border-gray-800 p-6 sticky top-0 h-screen no-print">
         <div className="mb-10">
           <h1 className="text-2xl font-black tracking-tighter text-amber-500 uppercase">
             BR <span className="text-white">Andaimes</span>
@@ -96,7 +96,7 @@ export default function App() {
       </aside>
 
       {/* Mobile Nav */}
-      <header className="md:hidden bg-[#141414] border-b border-gray-800 p-4 sticky top-0 z-50 flex items-center justify-between">
+      <header className="md:hidden bg-[#141414] border-b border-gray-800 p-4 sticky top-0 z-50 flex items-center justify-between no-print">
         <h1 className="text-xl font-black tracking-tighter text-amber-500 uppercase">
           BR <span className="text-white">Andaimes</span>
         </h1>
@@ -134,7 +134,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-10 relative overflow-x-hidden">
+      <main className="flex-1 p-4 md:p-10 relative overflow-x-hidden print:p-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentPage}

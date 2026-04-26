@@ -23,7 +23,15 @@
     display: none !important;
   }
   body {
-    background: white;
-    color: black;
+    background: white !important;
+    color: black !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
   }
 }
