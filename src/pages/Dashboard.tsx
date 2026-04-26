@@ -14,10 +14,7 @@ import {
   CheckCircle2,
   MessageCircle,
   Truck,
-  ArrowRight,
-  ArrowLeftRight,
-  Download,
-  Upload
+  ArrowRight
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -341,64 +338,6 @@ export default function Dashboard({ data, setData }: DashboardProps) {
           </div>
           <p className="text-[10px] text-gray-600 font-medium">Este número receberá o resumo dos equipamentos que devem retornar no dia seguinte.</p>
         </div>
-      </div>
-
-      {/* Backup & Sync */}
-      <div className="bg-[#141414] border border-gray-800 rounded-3xl p-8 max-w-xl">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="p-3 bg-blue-500/10 rounded-2xl">
-            <ArrowLeftRight className="w-6 h-6 text-blue-500" />
-          </div>
-          <div>
-            <h3 className="text-xl font-black uppercase">Sincronização & Backup</h3>
-            <p className="text-[10px] text-gray-500 font-mono uppercase tracking-widest mt-1">Gerenciar dados do grupo</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button 
-            onClick={() => {
-              const dataStr = JSON.stringify(data);
-              const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-              const exportFileDefaultName = `br-andaimes-backup-${format(new Date(), 'yyyy-MM-dd')}.json`;
-              const linkElement = document.createElement('a');
-              linkElement.setAttribute('href', dataUri);
-              linkElement.setAttribute('download', exportFileDefaultName);
-              linkElement.click();
-            }}
-            className="flex items-center justify-center gap-3 bg-gray-800 hover:bg-gray-700 text-white py-4 rounded-xl font-bold uppercase text-[10px] transition-all border border-gray-700"
-          >
-            <Download className="w-4 h-4" /> Exportar Dados (Backup)
-          </button>
-          <label className="flex items-center justify-center gap-3 bg-amber-500 hover:bg-amber-400 text-black py-4 rounded-xl font-bold uppercase text-[10px] transition-all cursor-pointer">
-            <Upload className="w-4 h-4" /> Importar Dados (Sincronizar)
-            <input 
-              type="file" 
-              className="hidden" 
-              accept=".json"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  try {
-                    const importedData = JSON.parse(event.target?.result as string);
-                    if (confirm('Atenção: Isso substituirá todos os dados atuais. Continuar?')) {
-                      setData(importedData);
-                      alert('Dados sincronizados com sucesso!');
-                    }
-                  } catch (err) {
-                    alert('Arquivo de backup inválido.');
-                  }
-                };
-                reader.readAsText(file);
-              }}
-            />
-          </label>
-        </div>
-        <p className="mt-4 text-[9px] text-gray-600 font-mono text-center uppercase tracking-tighter">
-          * Use para transferir dados entre celulares da equipe
-        </p>
       </div>
     </div>
   );

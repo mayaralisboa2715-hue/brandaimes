@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { AppData } from './types';
 import { loadData, saveData } from './lib/storage';
+import { supabase } from './lib/supabase';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -29,15 +30,59 @@ import Rentals from './pages/Rentals';
 
 export type Page = 'dashboard' | 'inventory' | 'customers' | 'rentals';
 
+const STORE_ID = 'br_andaimes_main_store';
+
 export default function App() {
   const [data, setData] = useState<AppData>(loadData());
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
-  // Sync with local storage on state change
+  // Sync with local storage and Supabase on state change
   useEffect(() => {
     saveData(data);
+    
+    // Background sync to Supabase
+    const syncToSupabase = async () => {
+      if (!supabase) return;
+      try {
+        setSyncing(true);
+        await supabase
+          .from('app_store')
+          .upsert({ id: STORE_ID, data, updated_at: new Date().toISOString() });
+      } catch (err) {
+        console.error('Supabase Sync Error:', err);
+      } finally {
+        // Delay clearing the syncing state to avoid flickering
+        setTimeout(() => setSyncing(false), 1000);
+      }
+    };
+
+    const timer = setTimeout(syncToSupabase, 2000); // Debounce sync
+    return () => clearTimeout(timer);
   }, [data]);
+
+  // Initial load from Supabase
+  useEffect(() => {
+    const fetchFromSupabase = async () => {
+      if (!supabase) return;
+      try {
+        const { data: remoteData, error } = await supabase
+          .from('app_store')
+          .select('data')
+          .eq('id', STORE_ID)
+          .single();
+        
+        if (remoteData?.data) {
+          setData(remoteData.data);
+        }
+      } catch (err) {
+        console.error('Initial Load Error:', err);
+      }
+    };
+
+    fetchFromSupabase();
+  }, []);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
@@ -66,6 +111,22 @@ export default function App() {
           </h1>
           <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-1">
             Gestão de Patrimônio
+          </p>
+        </div>
+
+        <div className="mb-6 pb-6 border-b border-gray-800">
+          <p className="text-[10px] text-gray-500 font-mono flex items-center gap-2 uppercase tracking-tighter">
+            Status: {syncing ? (
+              <span className="flex items-center gap-1 text-amber-500 animate-pulse">
+                <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
+                Sincronizando...
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-green-500">
+                <span className="w-1 h-1 bg-green-500 rounded-full"></span>
+                Nuvem Ativa
+              </span>
+            )}
           </p>
         </div>
 
