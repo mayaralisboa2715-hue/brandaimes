@@ -32,12 +32,15 @@ import { format, addDays, isSameDay } from 'date-fns';
 import { AppData, Rental } from '../types';
 import { calculateProductStock, getRentalStatus } from '../lib/storage';
 
+import { Page } from '../App';
+
 interface DashboardProps {
   data: AppData;
   setData: React.Dispatch<React.SetStateAction<AppData>>;
+  onNavigate?: (page: Page) => void;
 }
 
-export default function Dashboard({ data, setData }: DashboardProps) {
+export default function Dashboard({ data, setData, onNavigate }: DashboardProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Update stats every 30 seconds
@@ -218,7 +221,10 @@ export default function Dashboard({ data, setData }: DashboardProps) {
                       <div className="flex justify-between items-start mb-2">
                         <p className="font-black uppercase text-sm truncate leading-none">{customer?.name}</p>
                       </div>
-                      <p className="text-[10px] font-mono text-gray-500 uppercase mb-4">
+                      <p 
+                        onClick={() => onNavigate?.('rentals')}
+                        className="text-[10px] font-mono text-gray-500 uppercase mb-4 cursor-pointer hover:text-amber-500"
+                      >
                         OS: {rental.id} • {rental.items.length} ITENS
                       </p>
                       <div className="grid grid-cols-2 gap-2">

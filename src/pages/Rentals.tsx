@@ -80,6 +80,7 @@ export default function Rentals({ data, setData }: RentalsProps) {
     setActiveRental(newRental);
     resetForm();
     setView('print');
+    window.scrollTo(0, 0);
   };
 
   const resetForm = () => {
@@ -124,15 +125,24 @@ export default function Rentals({ data, setData }: RentalsProps) {
   if (view === 'print' && activeRental) {
     const customer = data.customers.find(c => c.id === activeRental.customerId);
     return (
-      <div className="bg-white text-black min-h-screen p-8 font-sans max-w-[210mm] mx-auto shadow-2xl">
-        <div className="no-print flex justify-between mb-8">
-          <button onClick={() => setView('list')} className="flex items-center gap-2 text-blue-600 font-bold uppercase text-xs">
-            <ArrowLeft className="w-4 h-4" /> Voltar
-          </button>
-          <button onClick={() => window.print()} className="bg-blue-600 text-white px-6 py-2 rounded font-bold uppercase text-xs flex items-center gap-2">
-            <Printer className="w-4 h-4" /> Imprimir (A4)
-          </button>
-        </div>
+      <div className="fixed inset-0 z-[100] bg-white text-black overflow-y-auto p-4 md:p-10 font-sans print:p-0">
+        <div className="max-w-[210mm] mx-auto bg-white mb-20">
+          <div className="no-print flex justify-between items-center mb-10 bg-gray-100 p-4 rounded-2xl border border-gray-200">
+            <button 
+              onClick={() => { setView('list'); window.scrollTo(0, 0); }} 
+              className="flex items-center gap-2 text-gray-600 hover:text-black font-black uppercase text-xs transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" /> Voltar para Locações
+            </button>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => window.print()} 
+                className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black uppercase text-xs flex items-center gap-2 hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all"
+              >
+                <Printer className="w-5 h-5" /> Imprimir OS (A4)
+              </button>
+            </div>
+          </div>
 
         <div className="flex justify-between items-center border-b-2 border-black pb-6 mb-8">
           <div className="flex items-center gap-4">
@@ -228,6 +238,7 @@ export default function Rentals({ data, setData }: RentalsProps) {
           <p className="text-[10px] text-gray-500 uppercase mt-1">BR ANDAIMES LTDA</p>
         </div>
       </div>
+    </div>
     );
   }
 
@@ -291,7 +302,11 @@ export default function Rentals({ data, setData }: RentalsProps) {
 
                   <div className="flex flex-wrap gap-2 w-full md:w-auto">
                     <button 
-                      onClick={() => { setActiveRental(rental); setView('print'); }}
+                      onClick={() => { 
+                        setActiveRental(rental); 
+                        setView('print'); 
+                        window.scrollTo(0, 0);
+                      }}
                       className="flex-1 md:flex-none flex items-center gap-2 px-4 py-3 bg-gray-800 text-white font-bold rounded-xl hover:bg-white hover:text-black transition-all uppercase text-[10px]"
                     >
                       <Printer className="w-4 h-4" /> IMPRIMIR OS

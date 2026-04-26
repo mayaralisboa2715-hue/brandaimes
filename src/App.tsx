@@ -113,16 +113,16 @@ export default function App() {
 
   const renderPage = () => {
     switch (currentPage) {
-      case 'dashboard': return <Dashboard data={data} setData={setData} />;
+      case 'dashboard': return <Dashboard data={data} setData={setData} onNavigate={setCurrentPage} />;
       case 'inventory': return <Inventory data={data} setData={setData} />;
       case 'customers': return <Customers data={data} setData={setData} />;
       case 'rentals': return <Rentals data={data} setData={setData} />;
-      default: return <Dashboard data={data} setData={setData} />;
+      default: return <Dashboard data={data} setData={setData} onNavigate={setCurrentPage} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col md:flex-row print:bg-white print:text-black">
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col w-64 bg-[#141414] border-r border-gray-800 p-6 sticky top-0 h-screen no-print">
         <div className="mb-10">
