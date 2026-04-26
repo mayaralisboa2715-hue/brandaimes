@@ -37,4 +37,5 @@ export interface AppData {
   products: Product[];
   customers: Customer[];
   rentals: Rental[];
+  ownerWhatsApp?: string;
 }

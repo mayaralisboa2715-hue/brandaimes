@@ -15,7 +15,8 @@ const initialData: AppData = {
     { id: 'p4', name: 'DIAGONAL 1.0M', totalQuantity: 50 }
   ],
   customers: [],
-  rentals: []
+  rentals: [],
+  ownerWhatsApp: '21999999999'
 };
 
 export const loadData = (): AppData => {

@@ -99,13 +99,33 @@ export default function Dashboard({ data, setData }: DashboardProps) {
     { name: 'Atrasadas', value: stats.delays, color: '#ef4444' }
   ].filter(d => d.value > 0);
 
-  const sendReminder = (rental: Rental) => {
+  const sendReminder = (rental: Rental, recipient: 'customer' | 'owner') => {
     const customer = data.customers.find(c => c.id === rental.customerId);
     if (!customer) return;
     
     const endFmt = format(new Date(rental.endDate), 'dd/MM/yyyy');
-    const message = `Olá ${customer.name}! Passando para lembrar que seu contrato na BR Andaimes vence amanhã (${endFmt}).\n\nPor favor, deixe os itens limpos para a retirada. Caso precise renovar, entre em contato.`;
-    const url = `https://api.whatsapp.com/send?phone=55${customer.whatsapp.replace(/\D/g, '')}&text=${encodeURIComponent(message)}`;
+    let message = '';
+    let phone = '';
+
+    if (recipient === 'customer') {
+      message = `Olá ${customer.name}! Passando para lembrar que seu contrato na BR Andaimes vence amanhã (${endFmt}).\n\nPor favor, deixe os itens limpos para a retirada. Caso precise renovar, entre em contato.`;
+      phone = customer.whatsapp;
+    } else {
+      const itemsList = rental.items.map(i => {
+        const p = data.products.find(prod => prod.id === i.productId);
+        return `${i.quantity}x ${p?.name}`;
+      }).join('\n');
+      
+      message = `*ALERTA DE VENCIMENTO (AMANHÃ)*\n\nCliente: ${customer.name}\nEndereço: ${customer.address}\n\n*Equipamentos:*\n${itemsList}`;
+      phone = data.ownerWhatsApp || '';
+    }
+
+    if (!phone) {
+      alert('Número não configurado!');
+      return;
+    }
+
+    const url = `https://api.whatsapp.com/send?phone=55${phone.replace(/\D/g, '')}&text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
   };
 
@@ -244,12 +264,20 @@ export default function Dashboard({ data, setData }: DashboardProps) {
                       <p className="text-[10px] font-mono text-gray-500 uppercase mb-4">
                         OS: {rental.id} • {rental.items.length} ITENS
                       </p>
-                      <button 
-                        onClick={() => sendReminder(rental)}
-                        className="w-full flex items-center justify-center gap-2 bg-amber-500 text-black py-3 rounded-xl text-[10px] font-black uppercase hover:bg-amber-400"
-                      >
-                        <MessageCircle className="w-3 h-3" /> Lembrar p/ Whats
-                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button 
+                          onClick={() => sendReminder(rental, 'customer')}
+                          className="flex items-center justify-center gap-2 bg-amber-500 text-black py-3 rounded-xl text-[10px] font-black uppercase hover:bg-amber-400"
+                        >
+                          <Users className="w-3 h-3" /> p/ Cliente
+                        </button>
+                        <button 
+                          onClick={() => sendReminder(rental, 'owner')}
+                          className="flex items-center justify-center gap-2 bg-gray-800 text-white py-3 rounded-xl text-[10px] font-black uppercase hover:bg-gray-700"
+                        >
+                          <TrendingUp className="w-3 h-3" /> p/ Admin
+                        </button>
+                      </div>
                     </div>
                   );
                 })
@@ -284,6 +312,31 @@ export default function Dashboard({ data, setData }: DashboardProps) {
               )}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Settings Section */}
+      <div className="bg-[#141414] border border-gray-800 rounded-3xl p-8 max-w-xl">
+        <h3 className="font-black uppercase text-sm tracking-widest mb-6 flex items-center gap-2">
+          <MessageCircle className="w-4 h-4 text-amber-500" /> Configuração do Proprietário
+        </h3>
+        <div className="space-y-4">
+          <label className="block text-[10px] uppercase font-black text-gray-500 tracking-widest leading-none mb-1">
+            Seu Número WhatsApp (Receber Alertas de Vencimento)
+          </label>
+          <div className="flex gap-4">
+            <input 
+              type="text" 
+              placeholder="Ex: 21999999999"
+              className="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors font-mono font-bold"
+              value={data.ownerWhatsApp || ''}
+              onChange={(e) => setData({ ...data, ownerWhatsApp: e.target.value.replace(/\D/g, '') })}
+            />
+            <div className="px-6 py-3 bg-green-500/10 text-green-500 rounded-xl font-bold text-xs uppercase flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" /> Configurado
+            </div>
+          </div>
+          <p className="text-[10px] text-gray-600 font-medium">Este número receberá o resumo dos equipamentos que devem retornar no dia seguinte.</p>
         </div>
       </div>
     </div>
