@@ -37,9 +37,11 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Sync with local storage and Supabase on state change
   useEffect(() => {
+    if (!isInitialized) return;
     saveData(data);
     
     // Background sync to Supabase
@@ -47,37 +49,47 @@ export default function App() {
       if (!supabase) return;
       try {
         setSyncing(true);
-        await supabase
+        const { error } = await supabase
           .from('app_store')
-          .upsert({ id: STORE_ID, data, updated_at: new Date().toISOString() });
+          .upsert({ 
+            id: STORE_ID, 
+            data, 
+            updated_at: new Date().toISOString() 
+          }, { onConflict: 'id' });
+          
+        if (error) throw error;
       } catch (err) {
         console.error('Supabase Sync Error:', err);
       } finally {
-        // Delay clearing the syncing state to avoid flickering
         setTimeout(() => setSyncing(false), 1000);
       }
     };
 
-    const timer = setTimeout(syncToSupabase, 2000); // Debounce sync
+    const timer = setTimeout(syncToSupabase, 2000);
     return () => clearTimeout(timer);
-  }, [data]);
+  }, [data, isInitialized]);
 
   // Initial load from Supabase
   useEffect(() => {
     const fetchFromSupabase = async () => {
-      if (!supabase) return;
+      if (!supabase) {
+        setIsInitialized(true);
+        return;
+      }
       try {
         const { data: remoteData, error } = await supabase
           .from('app_store')
           .select('data')
           .eq('id', STORE_ID)
-          .single();
+          .maybeSingle();
         
         if (remoteData?.data) {
           setData(remoteData.data);
         }
       } catch (err) {
         console.error('Initial Load Error:', err);
+      } finally {
+        setIsInitialized(true);
       }
     };
 
@@ -90,6 +102,14 @@ export default function App() {
     { id: 'customers', label: 'Clientes', icon: Users },
     { id: 'rentals', label: 'Locações', icon: Calendar },
   ];
+
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const renderPage = () => {
     switch (currentPage) {

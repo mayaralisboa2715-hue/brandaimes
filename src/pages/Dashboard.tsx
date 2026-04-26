@@ -116,7 +116,7 @@ export default function Dashboard({ data, setData }: DashboardProps) {
         return `${i.quantity}x ${p?.name}`;
       }).join('\n');
       
-      message = `*ALERTA DE VENCIMENTO (AMANHÃ)*\n\nCliente: ${customer.name}\nEndereço: ${customer.address}\n\n*Equipamentos:*\n${itemsList}`;
+      message = `*VENCE AMANHÃ*\n\nCliente: ${customer.name}\nEndereço: ${customer.address}\n\n*Equipamentos:*\n${itemsList}`;
       phone = data.ownerWhatsApp || '';
     }
 
@@ -142,7 +142,7 @@ export default function Dashboard({ data, setData }: DashboardProps) {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard 
           icon={Package} 
           label="Peças no Acervo" 
@@ -161,14 +161,6 @@ export default function Dashboard({ data, setData }: DashboardProps) {
           label="Locações Ativas" 
           value={stats.activeRentals} 
           sub="Contratos abertos" 
-        />
-        <StatCard 
-          icon={AlertTriangle} 
-          label="Atrasos" 
-          value={stats.delays} 
-          sub="Contratos vencidos" 
-          color={stats.delays > 0 ? "text-red-500" : "text-gray-500"}
-          highlight={stats.delays > 0}
         />
       </div>
 
@@ -201,41 +193,6 @@ export default function Dashboard({ data, setData }: DashboardProps) {
                   <Bar dataKey="Disponível" fill="#262626" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="bg-[#141414] border border-gray-800 rounded-3xl p-6">
-            <h3 className="font-black uppercase text-sm tracking-widest mb-8">Status Geral das Locações</h3>
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="h-48 w-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="space-y-4 flex-1">
-                {pieData.map((d, i) => (
-                  <div key={i} className="flex items-center justify-between border-b border-gray-800 pb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />
-                      <span className="text-xs uppercase font-bold text-gray-400">{d.name}</span>
-                    </div>
-                    <span className="font-black text-lg">{d.value}</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>

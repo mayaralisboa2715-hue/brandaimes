@@ -289,25 +289,30 @@ export default function Rentals({ data, setData }: RentalsProps) {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 w-full md:w-auto">
+                  <div className="flex flex-wrap gap-2 w-full md:w-auto">
                     <button 
                       onClick={() => { setActiveRental(rental); setView('print'); }}
-                      className="flex-1 md:flex-none p-3 bg-gray-800 rounded-xl hover:bg-white hover:text-black transition-all"
-                      title="Imprimir OS"
+                      className="flex-1 md:flex-none flex items-center gap-2 px-4 py-3 bg-gray-800 text-white font-bold rounded-xl hover:bg-white hover:text-black transition-all uppercase text-[10px]"
                     >
-                      <FileText className="w-5 h-5 mx-auto" />
+                      <Printer className="w-4 h-4" /> IMPRIMIR OS
+                    </button>
+                    <button 
+                      onClick={() => sendWhatsAppMessage(rental, 'lembrete')}
+                      className="flex-1 md:flex-none flex items-center gap-2 px-4 py-3 bg-gray-800 text-green-500 font-bold rounded-xl hover:bg-green-600 hover:text-white transition-all uppercase text-[10px]"
+                    >
+                      <MessageCircle className="w-4 h-4" /> LEMBRETE
                     </button>
                     <button 
                       onClick={() => sendWhatsAppMessage(rental, 'saida')}
-                      className="flex-1 md:flex-none p-3 bg-gray-800 rounded-xl hover:bg-green-600 transition-all text-green-500 hover:text-white"
+                      className="hidden md:flex flex-none items-center justify-center p-3 bg-gray-800 rounded-xl hover:bg-gray-700 transition-all text-gray-400"
                       title="Enviar Nota de Saída"
                     >
-                      <MessageCircle className="w-5 h-5 mx-auto" />
+                      <FileText className="w-4 h-4" />
                     </button>
                     {status !== 'Devolvido' && (
                       <button 
                         onClick={() => markAsReturned(rental.id)}
-                        className="flex-1 md:flex-none px-4 py-3 bg-amber-500 text-black font-bold rounded-xl uppercase text-xs"
+                        className="flex-1 md:flex-none px-4 py-3 bg-amber-500 text-black font-bold rounded-xl uppercase text-[10px]"
                       >
                         DEVOLVER
                       </button>
