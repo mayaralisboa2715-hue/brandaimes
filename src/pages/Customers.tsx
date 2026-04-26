@@ -7,15 +7,12 @@ import React, { useState } from 'react';
 import { Users, Plus, Trash2, Edit2, Search, MessageCircle, MapPin } from 'lucide-react';
 import { AppData, Customer } from '../types';
 
-import { useFirebase } from '../context/FirebaseContext';
-
 interface CustomersProps {
   data: AppData;
-  setData?: any;
+  setData: React.Dispatch<React.SetStateAction<AppData>>;
 }
 
-export default function Customers({ data }: CustomersProps) {
-  const { actions } = useFirebase();
+export default function Customers({ data, setData }: CustomersProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -26,16 +23,19 @@ export default function Customers({ data }: CustomersProps) {
     c.whatsapp.includes(searchTerm)
   );
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingCustomer) {
-      await actions.saveCustomer({ ...editingCustomer, ...formData });
+      setData(prev => ({
+        ...prev,
+        customers: prev.customers.map(c => c.id === editingCustomer.id ? { ...c, ...formData } : c)
+      }));
     } else {
       const newCustomer: Customer = {
         id: crypto.randomUUID(),
         ...formData
       };
-      await actions.saveCustomer(newCustomer);
+      setData(prev => ({ ...prev, customers: [...prev.customers, newCustomer] }));
     }
     closeModal();
   };
@@ -46,9 +46,12 @@ export default function Customers({ data }: CustomersProps) {
     setFormData({ name: '', whatsapp: '', address: '' });
   };
 
-  const deleteCustomer = async (id: string) => {
+  const deleteCustomer = (id: string) => {
     if (confirm('Deseja realmente remover este cliente?')) {
-      await actions.deleteCustomer(id);
+      setData(prev => ({
+        ...prev,
+        customers: prev.customers.filter(c => c.id !== id)
+      }));
     }
   };
 

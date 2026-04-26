@@ -5,17 +5,15 @@
 
 import React, { useState } from 'react';
 import { Package, Plus, Trash2, Edit2, Search } from 'lucide-react';
-import { useFirebase } from '../context/FirebaseContext';
-import { calculateProductStock } from '../lib/storage';
 import { AppData, Product } from '../types';
+import { calculateProductStock } from '../lib/storage';
 
 interface InventoryProps {
   data: AppData;
-  setData?: any;
+  setData: React.Dispatch<React.SetStateAction<AppData>>;
 }
 
-export default function Inventory({ data }: InventoryProps) {
-  const { actions } = useFirebase();
+export default function Inventory({ data, setData }: InventoryProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -26,16 +24,19 @@ export default function Inventory({ data }: InventoryProps) {
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingProduct) {
-      await actions.saveProduct({ ...editingProduct, ...formData });
+      setData(prev => ({
+        ...prev,
+        products: prev.products.map(p => p.id === editingProduct.id ? { ...p, ...formData } : p)
+      }));
     } else {
       const newProduct: Product = {
         id: crypto.randomUUID(),
         ...formData
       };
-      await actions.saveProduct(newProduct);
+      setData(prev => ({ ...prev, products: [...prev.products, newProduct] }));
     }
     closeModal();
   };
@@ -46,9 +47,12 @@ export default function Inventory({ data }: InventoryProps) {
     setFormData({ name: '', totalQuantity: 0 });
   };
 
-  const deleteProduct = async (id: string) => {
+  const deleteProduct = (id: string) => {
     if (confirm('Deseja realmente excluir este item?')) {
-      await actions.deleteProduct(id);
+      setData(prev => ({
+        ...prev,
+        products: prev.products.filter(p => p.id !== id)
+      }));
     }
   };
 

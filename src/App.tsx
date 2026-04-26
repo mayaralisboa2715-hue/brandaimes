@@ -8,19 +8,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
   Package, 
   Users, 
   Calendar, 
   Menu,
-  X,
-  LogIn,
-  LogOut
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useFirebase } from './context/FirebaseContext';
+import { AppData } from './types';
+import { loadData, saveData } from './lib/storage';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -31,14 +30,14 @@ import Rentals from './pages/Rentals';
 export type Page = 'dashboard' | 'inventory' | 'customers' | 'rentals';
 
 export default function App() {
-  const { user, loading, error, data, login, logout, actions } = useFirebase();
+  const [data, setData] = useState<AppData>(loadData());
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // BRidge setData for compatibility
-  const setData: any = (updater: any) => {
-    // This is a bridge for components that still expect React.SetStateAction<AppData>
-  };
+  // Sync with local storage on state change
+  useEffect(() => {
+    saveData(data);
+  }, [data]);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
@@ -46,34 +45,6 @@ export default function App() {
     { id: 'customers', label: 'Clientes', icon: Users },
     { id: 'rentals', label: 'Locações', icon: Calendar },
   ];
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
-        <div className="w-full max-w-md bg-red-500/10 border border-red-500/20 rounded-3xl p-10 text-center">
-          <div className="w-16 h-16 bg-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <X className="w-8 h-8 text-red-500" />
-          </div>
-          <h2 className="text-xl font-black text-white uppercase mb-2">Erro Crítico</h2>
-          <p className="text-sm text-red-400 mb-6">{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-red-500 text-white rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-red-600 transition-colors"
-          >
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   const renderPage = () => {
     switch (currentPage) {
