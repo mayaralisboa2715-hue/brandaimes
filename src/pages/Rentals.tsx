@@ -77,8 +77,9 @@ export default function Rentals({ data, setData }: RentalsProps) {
     };
 
     setData(prev => ({ ...prev, rentals: [...prev.rentals, newRental] }));
+    setActiveRental(newRental);
     resetForm();
-    setView('list');
+    setView('print');
   };
 
   const resetForm = () => {
