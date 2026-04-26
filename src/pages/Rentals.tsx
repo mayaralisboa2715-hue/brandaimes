@@ -135,8 +135,13 @@ export default function Rentals({ data, setData }: RentalsProps) {
 
         <div className="flex justify-between items-center border-b-2 border-black pb-6 mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 bg-black flex items-center justify-center rounded-lg">
-              <span className="text-white font-black text-2xl">BR</span>
+            <div className="w-24 h-24 flex items-center justify-center overflow-hidden">
+              <img 
+                src="https://i.ibb.co/d47cMrT8/Whats-App-Image-2026-04-25-at-23-29-44.jpg" 
+                alt="Logo BR Andaimes" 
+                className="w-full h-full object-contain"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <h1 className="text-2xl font-black uppercase leading-none">BR ANDAIMES LTDA</h1>
