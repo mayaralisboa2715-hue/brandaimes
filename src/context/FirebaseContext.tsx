@@ -20,6 +20,7 @@ import { AppData, Product, Customer, Rental } from '../types';
 interface FirebaseContextType {
   user: User | null;
   loading: boolean;
+  error: string | null;
   data: AppData;
   login: () => Promise<any>;
   logout: () => Promise<void>;
@@ -71,6 +72,7 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
 export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<AppData>({
     products: [],
     customers: [],
@@ -79,13 +81,28 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   });
 
   useEffect(() => {
+    if (!auth) {
+      setError("Firebase falhou ao inicializar. Verifique as configurações.");
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       if (!u) {
-        loginAnonymously().catch(console.error);
+        loginAnonymously().catch(err => {
+          console.error("Erro ao entrar anonimamente:", err);
+          setError("Erro de conexão com o banco de dados.");
+          setLoading(false);
+        });
       } else {
         setUser(u);
         setLoading(false);
+        setError(null);
       }
+    }, (err) => {
+      console.error("Erro no Auth State:", err);
+      setError("Erro na autenticação.");
+      setLoading(false);
     });
     return unsubscribe;
   }, []);
@@ -189,6 +206,7 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     <FirebaseContext.Provider value={{ 
       user, 
       loading, 
+      error,
       data, 
       login: loginWithGoogle, 
       logout,

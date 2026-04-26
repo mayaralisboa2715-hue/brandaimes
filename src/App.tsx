@@ -31,19 +31,13 @@ import Rentals from './pages/Rentals';
 export type Page = 'dashboard' | 'inventory' | 'customers' | 'rentals';
 
 export default function App() {
-  const { user, loading, data, login, logout, actions } = useFirebase();
+  const { user, loading, error, data, login, logout, actions } = useFirebase();
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // setData needs to be adapted for components that use it
+  // BRidge setData for compatibility
   const setData: any = (updater: any) => {
     // This is a bridge for components that still expect React.SetStateAction<AppData>
-    // In a real refactor, we'd pass down actions directly
-    if (typeof updater === 'function') {
-      const nextData = updater(data);
-      // We can't easily sync back everything at once with current actions
-      // so this is a placeholder to prevent crashes while we refactor sub-components
-    }
   };
 
   const navItems = [
@@ -52,6 +46,26 @@ export default function App() {
     { id: 'customers', label: 'Clientes', icon: Users },
     { id: 'rentals', label: 'Locações', icon: Calendar },
   ];
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
+        <div className="w-full max-w-md bg-red-500/10 border border-red-500/20 rounded-3xl p-10 text-center">
+          <div className="w-16 h-16 bg-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <X className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-black text-white uppercase mb-2">Erro Crítico</h2>
+          <p className="text-sm text-red-400 mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-red-500 text-white rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-red-600 transition-colors"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
