@@ -1,0 +1,25 @@
+{
+  "short_name": "BR Andaimes",
+  "name": "BR Andaimes - Gestão de Aluguel",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/d47cMrT8/Whats-App-Image-2026-04-25-at-23-29-44.jpg",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "https://i.ibb.co/d47cMrT8/Whats-App-Image-2026-04-25-at-23-29-44.jpg",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://i.ibb.co/d47cMrT8/Whats-App-Image-2026-04-25-at-23-29-44.jpg",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0a0a0a",
+  "background_color": "#0a0a0a"
+}

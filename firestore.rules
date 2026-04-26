@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Note: Simple app, we trust the unique owner in this specific case 
+    // but we enforce signature for all modifications.
+    
+    // 1. Products
+    function isValidProduct(data) {
+      return data.keys().hasAll(['id', 'name', 'totalQuantity']) &&
+             data.keys().size() == 3 &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 200 &&
+             data.totalQuantity is int;
+    }
+
+    match /products/{productId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidProduct(incoming()) && isValidId(productId);
+      allow update: if isSignedIn() && isValidProduct(incoming()) && 
+                    incoming().id == existing().id;
+      allow delete: if isSignedIn();
+    }
+
+    // 2. Customers
+    function isValidCustomer(data) {
+      return data.keys().hasAll(['id', 'name', 'whatsapp', 'address']) &&
+             data.keys().size() == 4 &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 200 &&
+             data.whatsapp is string && data.whatsapp.size() <= 20 &&
+             data.address is string && data.address.size() <= 500;
+    }
+
+    match /customers/{customerId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidCustomer(incoming()) && isValidId(customerId);
+      allow update: if isSignedIn() && isValidCustomer(incoming()) &&
+                    incoming().id == existing().id;
+      allow delete: if isSignedIn();
+    }
+
+    // 3. Rentals
+    function isValidRental(data) {
+      return data.keys().hasAll(['id', 'customerId', 'items', 'startDate', 'endDate', 'status', 'createdAt']) &&
+             data.keys().size() == 7 &&
+             data.id is string && data.id.size() <= 128 &&
+             data.customerId is string &&
+             data.items is list && data.items.size() <= 50 &&
+             data.startDate is string &&
+             data.endDate is string &&
+             data.status in ['No Prazo', 'Atrasada', 'Devolvido'] &&
+             data.createdAt is string;
+    }
+
+    match /rentals/{rentalId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidRental(incoming()) && isValidId(rentalId);
+      allow update: if isSignedIn() && isValidRental(incoming()) &&
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['status']) ||
+                     incoming().diff(existing()).affectedKeys().hasOnly(['status', 'items', 'endDate', 'startDate']));
+      allow delete: if isSignedIn();
+    }
+
+    // 4. Settings
+    match /settings/{settingId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+  }
+}

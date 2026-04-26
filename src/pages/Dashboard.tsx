@@ -30,14 +30,16 @@ import {
 } from 'recharts';
 import { format, addDays, isSameDay } from 'date-fns';
 import { AppData, Rental } from '../types';
+import { useFirebase } from '../context/FirebaseContext';
 import { calculateProductStock, getRentalStatus } from '../lib/storage';
 
 interface DashboardProps {
   data: AppData;
-  setData: React.Dispatch<React.SetStateAction<AppData>>;
+  setData?: any;
 }
 
-export default function Dashboard({ data, setData }: DashboardProps) {
+export default function Dashboard({ data }: DashboardProps) {
+  const { actions } = useFirebase();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Update stats every 30 seconds
@@ -330,7 +332,7 @@ export default function Dashboard({ data, setData }: DashboardProps) {
               placeholder="Ex: 21999999999"
               className="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors font-mono font-bold"
               value={data.ownerWhatsApp || ''}
-              onChange={(e) => setData({ ...data, ownerWhatsApp: e.target.value.replace(/\D/g, '') })}
+              onChange={(e) => actions.saveSettings(e.target.value.replace(/\D/g, ''))}
             />
             <div className="px-6 py-3 bg-green-500/10 text-green-500 rounded-xl font-bold text-xs uppercase flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" /> Configurado

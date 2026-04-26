@@ -8,22 +8,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   BarChart3, 
   Package, 
   Users, 
   Calendar, 
-  PlusCircle, 
-  AlertCircle,
-  Bell,
-  CheckCircle2,
   Menu,
-  X
+  X,
+  LogIn,
+  LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AppData } from './types';
-import { loadData, saveData } from './lib/storage';
+import { useFirebase } from './context/FirebaseContext';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -34,14 +31,20 @@ import Rentals from './pages/Rentals';
 export type Page = 'dashboard' | 'inventory' | 'customers' | 'rentals';
 
 export default function App() {
-  const [data, setData] = useState<AppData>(loadData());
+  const { user, loading, data, login, logout, actions } = useFirebase();
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Sync with local storage on state change
-  useEffect(() => {
-    saveData(data);
-  }, [data]);
+  // setData needs to be adapted for components that use it
+  const setData: any = (updater: any) => {
+    // This is a bridge for components that still expect React.SetStateAction<AppData>
+    // In a real refactor, we'd pass down actions directly
+    if (typeof updater === 'function') {
+      const nextData = updater(data);
+      // We can't easily sync back everything at once with current actions
+      // so this is a placeholder to prevent crashes while we refactor sub-components
+    }
+  };
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
@@ -49,6 +52,50 @@ export default function App() {
     { id: 'customers', label: 'Clientes', icon: Users },
     { id: 'rentals', label: 'Locações', icon: Calendar },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
+        <div className="w-full max-w-md bg-[#141414] border border-gray-800 rounded-3xl p-10 text-center shadow-2xl">
+          <div className="mb-8">
+             <div className="w-24 h-24 mx-auto mb-6 flex items-center justify-center bg-amber-500/10 rounded-3xl">
+              <img 
+                src="https://i.ibb.co/d47cMrT8/Whats-App-Image-2026-04-25-at-23-29-44.jpg" 
+                alt="Logo BR Andaimes" 
+                className="w-16 h-16 object-contain"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <h1 className="text-3xl font-black tracking-tighter text-amber-500 uppercase">
+              BR <span className="text-white">Andaimes</span>
+            </h1>
+            <p className="text-xs font-mono text-gray-500 uppercase tracking-widest mt-2">
+              Gestão de Patrimônio
+            </p>
+          </div>
+
+          <button 
+            onClick={login}
+            className="w-full bg-amber-500 text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 uppercase text-sm tracking-widest"
+          >
+            <LogIn className="w-5 h-5" /> Entrar com Google
+          </button>
+          
+          <p className="mt-8 text-[10px] text-gray-600 font-mono uppercase tracking-widest">
+            Acesso Restrito à Equipe Autorizada
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const renderPage = () => {
     switch (currentPage) {
@@ -90,7 +137,13 @@ export default function App() {
           ))}
         </nav>
 
-        <div className="mt-auto pt-6 border-t border-gray-800 text-center">
+        <div className="mt-auto pt-6 border-t border-gray-800 flex flex-col items-center gap-4">
+          <button 
+            onClick={logout}
+            className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors uppercase text-[10px] font-bold tracking-widest"
+          >
+            <LogOut className="w-4 h-4" /> Sair da Conta
+          </button>
           <p className="text-[10px] text-gray-600 font-mono">v1.2.0 • 2026</p>
         </div>
       </aside>

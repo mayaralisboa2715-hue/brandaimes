@@ -23,12 +23,15 @@ import { ptBR } from 'date-fns/locale';
 import { AppData, Rental, RentalItem, Customer, Product } from '../types';
 import { calculateProductStock, getRentalStatus } from '../lib/storage';
 
+import { useFirebase } from '../context/FirebaseContext';
+
 interface RentalsProps {
   data: AppData;
-  setData: React.Dispatch<React.SetStateAction<AppData>>;
+  setData?: any;
 }
 
-export default function Rentals({ data, setData }: RentalsProps) {
+export default function Rentals({ data }: RentalsProps) {
+  const { actions } = useFirebase();
   const [view, setView] = useState<'list' | 'create' | 'print'>('list');
   const [activeRental, setActiveRental] = useState<Rental | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,7 +65,7 @@ export default function Rentals({ data, setData }: RentalsProps) {
     setSelectedItems(selectedItems.filter(i => i.productId !== productId));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCustomerId || selectedItems.length === 0) return;
 
@@ -76,7 +79,7 @@ export default function Rentals({ data, setData }: RentalsProps) {
       createdAt: new Date().toISOString()
     };
 
-    setData(prev => ({ ...prev, rentals: [...prev.rentals, newRental] }));
+    await actions.saveRental(newRental);
     resetForm();
     setView('list');
   };
@@ -88,11 +91,11 @@ export default function Rentals({ data, setData }: RentalsProps) {
     setEndDate(format(addDays(new Date(), 30), 'yyyy-MM-dd'));
   };
 
-  const markAsReturned = (id: string) => {
-    setData(prev => ({
-      ...prev,
-      rentals: prev.rentals.map(r => r.id === id ? { ...r, status: 'Devolvido' } : r)
-    }));
+  const markAsReturned = async (id: string) => {
+    const rental = data.rentals.find(r => r.id === id);
+    if (rental) {
+      await actions.saveRental({ ...rental, status: 'Devolvido' });
+    }
   };
 
   const sendWhatsAppMessage = (rental: Rental, type: 'saida' | 'devolucao' | 'lembrete') => {
