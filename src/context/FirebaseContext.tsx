@@ -14,7 +14,7 @@ import {
   deleteDoc, 
   getDoc 
 } from 'firebase/firestore';
-import { auth, db, loginWithGoogle, logout } from '../lib/firebase';
+import { auth, db, loginWithGoogle, logout, loginAnonymously } from '../lib/firebase';
 import { AppData, Product, Customer, Rental } from '../types';
 
 interface FirebaseContextType {
@@ -80,8 +80,12 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
+      if (!u) {
+        loginAnonymously().catch(console.error);
+      } else {
+        setUser(u);
+        setLoading(false);
+      }
     });
     return unsubscribe;
   }, []);
